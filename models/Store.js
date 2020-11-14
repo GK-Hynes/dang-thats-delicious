@@ -38,14 +38,20 @@ const storeSchema = new mongoose.Schema({
 });
 
 // Create slug from store name
-storeSchema.pre("save", function (next) {
+storeSchema.pre("save", async function (next) {
   if (!this.isModified("name")) {
     next(); // skip
     return; // stop the function
   }
   this.slug = slug(this.name);
+  // check that slug is unique
+  const slugRegex = new RegExp(`^(${this.slug})((-[0-9]*$)?)$`, "i");
+  const storesWithSlug = await this.constructor.find({ slug: slugRegex });
+  // Add number to end of duplicate slugs
+  if (storesWithSlug.length) {
+    this.slug = `${this.slug}-${storesWithSlug.length + 1}`;
+  }
   next();
-  // TODO make sure slugs are unique
 });
 
 module.exports = mongoose.model("Store", storeSchema);
