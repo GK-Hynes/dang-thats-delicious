@@ -42,6 +42,12 @@ const storeSchema = new mongoose.Schema({
   }
 });
 
+// Define indexes
+storeSchema.index({
+  name: "text",
+  description: "text"
+});
+
 // Create slug from store name
 storeSchema.pre("save", async function (next) {
   if (!this.isModified("name")) {
