@@ -1,4 +1,5 @@
-const axios = require("axios");
+import axios from "axios";
+import dompurify from "dompurify";
 
 function searchResultsHTML(stores) {
   return stores
@@ -24,14 +25,20 @@ function typeAhead(search) {
     }
     // Show the search results
     searchResults.style.display = "block";
-    searchResults.innerHTML = "";
 
     axios
       .get(`/api/search?q=${this.value}`)
       .then((res) => {
         if (res.data.length) {
-          searchResults.innerHTML = searchResultsHTML(res.data);
+          searchResults.innerHTML = dompurify.sanitize(
+            searchResultsHTML(res.data)
+          );
+          return;
         }
+        // tell them nothing came back
+        searchResults.innerHTML = dompurify.sanitize(
+          `<div className="search__result">No results for ${this.value} found!</div>`
+        );
       })
       .catch((err) => {
         console.error(err);
